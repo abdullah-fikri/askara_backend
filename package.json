@@ -1,0 +1,33 @@
+{
+  "name": "askara-backend",
+  "version": "1.0.0",
+  "description": "Express.js MVC Backend for PT Askara Tekno Pangan with Supabase / PostgreSQL",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "migrate": "node scripts/migrate.js",
+    "seed": "node scripts/seed.js",
+    "setup-db": "node scripts/setupDb.js"
+  },
+  "keywords": [
+    "express",
+    "mvc",
+    "supabase",
+    "askara",
+    "nextjs"
+  ],
+  "author": "Askara Team",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.3",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.23.0"
+  }
+}
