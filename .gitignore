@@ -6,3 +6,6 @@ node_modules/
 *.log
 public/uploads/*
 !public/uploads/.gitkeep
+scripts/test-all-crud.js
+scripts/diagnose-db.js
+

@@ -9,7 +9,64 @@ const {
   batchReorder,
 } = require('../utils/sequenceHelper');
 
-let memoryHeroSlides = [...initialHeroSlides];
+function formatHeroSlide(slide) {
+  if (!slide) return null;
+  return {
+    ...slide,
+    // Provide both naming conventions for full compatibility
+    primary_btn_text_en: slide.primary_btn_text_en || slide.primary_cta_text_en || 'Explore Solutions',
+    primary_btn_text_id: slide.primary_btn_text_id || slide.primary_cta_text_id || 'Jelajahi Solusi',
+    primary_btn_url: slide.primary_btn_url || slide.primary_cta_link || '/products',
+    primary_cta_text_en: slide.primary_cta_text_en || slide.primary_btn_text_en || 'Explore Solutions',
+    primary_cta_text_id: slide.primary_cta_text_id || slide.primary_btn_text_id || 'Jelajahi Solusi',
+    primary_cta_link: slide.primary_cta_link || slide.primary_btn_url || '/products',
+
+    secondary_btn_text_en: slide.secondary_btn_text_en || slide.secondary_cta_text_en || 'Contact Us',
+    secondary_btn_text_id: slide.secondary_btn_text_id || slide.secondary_cta_text_id || 'Hubungi Kami',
+    secondary_btn_url: slide.secondary_btn_url || slide.secondary_cta_link || '/contact',
+    secondary_cta_text_en: slide.secondary_cta_text_en || slide.secondary_btn_text_en || 'Contact Us',
+    secondary_cta_text_id: slide.secondary_cta_text_id || slide.secondary_btn_text_id || 'Hubungi Kami',
+    secondary_cta_link: slide.secondary_cta_link || slide.secondary_btn_url || '/contact',
+  };
+}
+
+function toSupabasePayload(payload) {
+  const mapped = {};
+  if (payload.title_en !== undefined) mapped.title_en = payload.title_en;
+  if (payload.title_id !== undefined) mapped.title_id = payload.title_id;
+  if (payload.subtitle_en !== undefined) mapped.subtitle_en = payload.subtitle_en;
+  if (payload.subtitle_id !== undefined) mapped.subtitle_id = payload.subtitle_id;
+  if (payload.image !== undefined) mapped.image = payload.image;
+  if (payload.badge_en !== undefined) mapped.badge_en = payload.badge_en;
+  if (payload.badge_id !== undefined) mapped.badge_id = payload.badge_id;
+  if (payload.tag_en !== undefined) mapped.tag_en = payload.tag_en;
+  if (payload.tag_id !== undefined) mapped.tag_id = payload.tag_id;
+
+  const pTextEn = payload.primary_cta_text_en !== undefined ? payload.primary_cta_text_en : payload.primary_btn_text_en;
+  if (pTextEn !== undefined) mapped.primary_cta_text_en = pTextEn;
+
+  const pTextId = payload.primary_cta_text_id !== undefined ? payload.primary_cta_text_id : payload.primary_btn_text_id;
+  if (pTextId !== undefined) mapped.primary_cta_text_id = pTextId;
+
+  const pUrl = payload.primary_cta_link !== undefined ? payload.primary_cta_link : payload.primary_btn_url;
+  if (pUrl !== undefined) mapped.primary_cta_link = pUrl;
+
+  const sTextEn = payload.secondary_cta_text_en !== undefined ? payload.secondary_cta_text_en : payload.secondary_btn_text_en;
+  if (sTextEn !== undefined) mapped.secondary_cta_text_en = sTextEn;
+
+  const sTextId = payload.secondary_cta_text_id !== undefined ? payload.secondary_cta_text_id : payload.secondary_btn_text_id;
+  if (sTextId !== undefined) mapped.secondary_cta_text_id = sTextId;
+
+  const sUrl = payload.secondary_cta_link !== undefined ? payload.secondary_cta_link : payload.secondary_btn_url;
+  if (sUrl !== undefined) mapped.secondary_cta_link = sUrl;
+
+  if (payload.sort_order !== undefined) mapped.sort_order = Number(payload.sort_order) || 0;
+  if (payload.is_active !== undefined) mapped.is_active = Boolean(payload.is_active);
+
+  return mapped;
+}
+
+let memoryHeroSlides = initialHeroSlides.map(formatHeroSlide);
 
 class HeroSlide {
   static async findAll({ activeOnly = false } = {}) {
@@ -26,7 +83,7 @@ class HeroSlide {
 
         const { data, error } = await query;
         if (!error && data) {
-          return data;
+          return data.map(formatHeroSlide);
         }
       } catch (err) {
         // fallback
@@ -35,7 +92,7 @@ class HeroSlide {
 
     let list = [...memoryHeroSlides];
     if (activeOnly) list = list.filter(s => s.is_active);
-    return list.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    return list.map(formatHeroSlide).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
   }
 
   static async findById(id) {
@@ -46,31 +103,17 @@ class HeroSlide {
           .select('*')
           .eq('id', id)
           .single();
-        if (!error && data) return data;
+        if (!error && data) return formatHeroSlide(data);
       } catch (err) {
         // fallback
       }
     }
-    return memoryHeroSlides.find(s => s.id === Number(id)) || null;
+    const found = memoryHeroSlides.find(s => s.id === Number(id)) || null;
+    return formatHeroSlide(found);
   }
 
   static async create(payload) {
-    const dataToInsert = {
-      title_en: payload.title_en || '',
-      title_id: payload.title_id || '',
-      subtitle_en: payload.subtitle_en || '',
-      subtitle_id: payload.subtitle_id || '',
-      image: payload.image,
-      primary_btn_text_en: payload.primary_btn_text_en || 'Explore Solutions',
-      primary_btn_text_id: payload.primary_btn_text_id || 'Jelajahi Solusi',
-      primary_btn_url: payload.primary_btn_url || '/products',
-      secondary_btn_text_en: payload.secondary_btn_text_en || 'Contact Us',
-      secondary_btn_text_id: payload.secondary_btn_text_id || 'Hubungi Kami',
-      secondary_btn_url: payload.secondary_btn_url || '/contact',
-      sort_order: Number(payload.sort_order) || 0,
-      is_active: payload.is_active !== undefined ? payload.is_active : true
-    };
-
+    const dataToInsert = toSupabasePayload(payload);
     let result = null;
 
     if (isSupabaseConfigured()) {
@@ -94,7 +137,7 @@ class HeroSlide {
           .single();
 
         if (!error && data) {
-          result = data;
+          result = formatHeroSlide(data);
         }
         if (error) {
           console.warn('[HeroSlide.create] Supabase notice (using memory fallback):', error.message);
@@ -105,11 +148,11 @@ class HeroSlide {
     }
 
     if (!result) {
-      const newSlide = {
+      const newSlide = formatHeroSlide({
         id: memoryHeroSlides.length ? Math.max(...memoryHeroSlides.map(s => s.id)) + 1 : 1,
         ...dataToInsert,
         created_at: new Date().toISOString()
-      };
+      });
       memoryHeroSlides.push(newSlide);
       result = newSlide;
     }
@@ -119,8 +162,7 @@ class HeroSlide {
   }
 
   static async update(id, payload) {
-    const dataToUpdate = { ...payload };
-    delete dataToUpdate.id;
+    const dataToUpdate = toSupabasePayload(payload);
 
     // Clean up replaced image
     try {
@@ -144,7 +186,7 @@ class HeroSlide {
           .eq('id', id)
           .select()
           .single();
-        if (!error && data) updated = data;
+        if (!error && data) updated = formatHeroSlide(data);
         if (error) {
           console.warn('[HeroSlide.update] Supabase notice (using memory fallback):', error.message);
         }
@@ -156,11 +198,11 @@ class HeroSlide {
     if (!updated) {
       const index = memoryHeroSlides.findIndex(s => s.id === Number(id));
       if (index !== -1) {
-        memoryHeroSlides[index] = {
+        memoryHeroSlides[index] = formatHeroSlide({
           ...memoryHeroSlides[index],
           ...dataToUpdate,
           updated_at: new Date().toISOString()
-        };
+        });
         updated = memoryHeroSlides[index];
       }
     }
@@ -188,7 +230,7 @@ class HeroSlide {
           .select()
           .single();
         if (!error && data) {
-          deleted = data;
+          deleted = formatHeroSlide(data);
         }
       } catch (err) {
         console.warn('[HeroSlide.delete] Supabase delete failed, fallback to memory:', err.message);
