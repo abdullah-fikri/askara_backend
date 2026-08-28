@@ -8,7 +8,7 @@ const {
   batchReorder,
 } = require('../utils/sequenceHelper');
 
-let memoryPartners = [...initialPartners];
+let memoryPartners = [];
 
 function normalizeGallery(gallery) {
   if (!gallery) return [];
@@ -55,7 +55,7 @@ class Partner {
         }
 
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
+        if (!error && data !== null) {
           return data.map(formatPartner);
         }
       } catch (err) {

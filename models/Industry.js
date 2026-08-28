@@ -61,7 +61,7 @@ class Industry {
         }
 
         const { data, error } = await query;
-        if (!error && data && data.length > 0) {
+        if (!error && data !== null) {
           return data.map(formatIndustry);
         }
       } catch (err) {

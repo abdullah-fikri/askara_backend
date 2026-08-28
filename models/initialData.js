@@ -248,15 +248,9 @@ const initialProducts = [
 // ====================================================================
 // 4. PARTNERS & PRINCIPALS SEED
 // ====================================================================
-const initialPartners = [
-  {
-    id: 1,
-    name: 'BioSystems',
-    slug: 'biosystems',
-    logo: '/images/logo.png',
-    country: 'Spain (Barcelona)',
-    category: 'Automated Photometric Chemistry & Rapid Test Kits',
-    website_url: 'https://www.biosystems.es',
+const initialPartners = [];
+/*
+const initialPartnersDisabled = [
     description_en: 'BioSystems S.A. is a world-renowned European developer and manufacturer of clinical and agri-food analytical solutions. Founded in Barcelona in 1981, BioSystems provides automated photometric analyzers, dedicated liquid reagents, and rapid allergen testing kits trusted in over 100 countries.',
     description_id: 'BioSystems S.A. adalah pengembang dan produsen solusi analitis klinis dan agro-pangan terkemuka dari Eropa. Didirikan di Barcelona pada tahun 1981, BioSystems menyediakan penganalisis fotometris otomatis, reagen cair khusus, dan kit uji cepat alergen yang dipercaya di lebih dari 100 negara.',
     documentation_gallery: [
@@ -416,6 +410,7 @@ const initialPartners = [
     created_at: new Date().toISOString()
   }
 ];
+*/
 
 // ====================================================================
 // 5. ARTICLES SEED
@@ -1151,30 +1146,32 @@ async function seedDatabase(client) {
   console.log(`  ✓ Seeded ${initialProducts.length} products`);
 
   // 4. Partners
-  for (const part of initialPartners) {
-    await client.query(
-      `INSERT INTO partners (id, name, slug, logo, country, category, description_en, description_id, documentation_gallery, website_url, is_active, sort_order)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11, $12)
-       ON CONFLICT (id) DO UPDATE SET
-         name = EXCLUDED.name,
-         slug = EXCLUDED.slug,
-         logo = EXCLUDED.logo,
-         country = EXCLUDED.country,
-         category = EXCLUDED.category,
-         description_en = EXCLUDED.description_en,
-         description_id = EXCLUDED.description_id,
-         documentation_gallery = EXCLUDED.documentation_gallery,
-         website_url = EXCLUDED.website_url,
-         is_active = EXCLUDED.is_active,
-         sort_order = EXCLUDED.sort_order`,
-      [
-        part.id, part.name, part.slug, part.logo, part.country, part.category,
-        part.description_en, part.description_id, JSON.stringify(part.documentation_gallery || []),
-        part.website_url, part.is_active, part.sort_order
-      ]
-    );
+  if (initialPartners && initialPartners.length > 0) {
+    for (const part of initialPartners) {
+      await client.query(
+        `INSERT INTO partners (id, name, slug, logo, country, category, description_en, description_id, documentation_gallery, website_url, is_active, sort_order)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11, $12)
+         ON CONFLICT (id) DO UPDATE SET
+           name = EXCLUDED.name,
+           slug = EXCLUDED.slug,
+           logo = EXCLUDED.logo,
+           country = EXCLUDED.country,
+           category = EXCLUDED.category,
+           description_en = EXCLUDED.description_en,
+           description_id = EXCLUDED.description_id,
+           documentation_gallery = EXCLUDED.documentation_gallery,
+           website_url = EXCLUDED.website_url,
+           is_active = EXCLUDED.is_active,
+           sort_order = EXCLUDED.sort_order`,
+        [
+          part.id, part.name, part.slug, part.logo, part.country, part.category,
+          part.description_en, part.description_id, JSON.stringify(part.documentation_gallery || []),
+          part.website_url, part.is_active, part.sort_order
+        ]
+      );
+    }
+    console.log(`  ✓ Seeded ${initialPartners.length} partners`);
   }
-  console.log(`  ✓ Seeded ${initialPartners.length} partners`);
 
   // 5. Articles
   for (const art of initialArticles) {
