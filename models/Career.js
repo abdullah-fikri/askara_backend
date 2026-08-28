@@ -1,7 +1,7 @@
 const { supabase, isSupabaseConfigured } = require('../config/supabase');
 const { initialCareers } = require('./initialData');
 
-let memoryCareers = [...initialCareers];
+let memoryCareers = [];
 
 function ensureSlug(item) {
   if (!item) return item;

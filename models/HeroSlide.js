@@ -66,7 +66,7 @@ function toSupabasePayload(payload) {
   return mapped;
 }
 
-let memoryHeroSlides = initialHeroSlides.map(formatHeroSlide);
+let memoryHeroSlides = [];
 
 class HeroSlide {
   static async findAll({ activeOnly = false } = {}) {
@@ -82,7 +82,7 @@ class HeroSlide {
         }
 
         const { data, error } = await query;
-        if (!error && data) {
+        if (!error && data !== null) {
           return data.map(formatHeroSlide);
         }
       } catch (err) {

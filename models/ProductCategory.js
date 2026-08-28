@@ -8,7 +8,7 @@ const {
   batchReorder,
 } = require('../utils/sequenceHelper');
 
-let memoryCategories = [...initialCategories];
+let memoryCategories = [];
 
 class ProductCategory {
   static async findAll({ activeOnly = false } = {}) {

@@ -60,7 +60,7 @@ function toSupabasePayload(payload) {
   return mapped;
 }
 
-let memoryHomeSections = initialHomeSections.map(formatSection);
+let memoryHomeSections = [];
 
 class HomeSection {
   static async getSection(sectionKey = 'who_we_are') {

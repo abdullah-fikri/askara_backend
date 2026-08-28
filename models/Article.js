@@ -8,7 +8,7 @@ const {
   batchReorder,
 } = require('../utils/sequenceHelper');
 
-let memoryArticles = [...initialArticles];
+let memoryArticles = [];
 
 class Article {
   static async findAll({ activeOnly = false, limit = null } = {}) {

@@ -9,7 +9,7 @@ const {
   batchReorder,
 } = require('../utils/sequenceHelper');
 
-let memoryIndustries = [...initialIndustries];
+let memoryIndustries = [];
 
 function normalizeArray(arr) {
   if (!arr) return [];

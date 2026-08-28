@@ -9,7 +9,7 @@ const {
   batchReorder,
 } = require('../utils/sequenceHelper');
 
-let memoryProducts = [...initialProducts];
+let memoryProducts = [];
 
 class Product {
   static async findAll({ categorySlug, featuredOnly = false, activeOnly = false, search = '' } = {}) {
