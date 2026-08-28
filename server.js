@@ -9,25 +9,14 @@ const { errorHandler, notFoundHandler } = require('./middlewares/errorMiddleware
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enable CORS for frontend
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  process.env.FRONTEND_URL
-].filter(Boolean);
-
+// Enable CORS for frontend (reflects origin dynamically for localhost, vercel, and custom domains)
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-      return callback(null, true);
-    }
-    if (origin.endsWith('.vercel.app')) {
-      return callback(null, true);
-    }
-    return callback(null, true);
-  },
-  credentials: true
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
+app.options('*', cors());
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -55,8 +44,9 @@ app.get('/', (req, res) => {
   });
 });
 
-// Mount main API
+// Mount main API (both /api and direct / paths)
 app.use('/api', apiRoutes);
+app.use('/', apiRoutes);
 
 // Error Handling Middlewares
 app.use(notFoundHandler);
