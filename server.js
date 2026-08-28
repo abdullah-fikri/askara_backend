@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const apiRoutes = require('./routes/api');
 const { errorHandler, notFoundHandler } = require('./middlewares/errorMiddleware');
+const { startDailyScheduler } = require('./utils/keepAliveScheduler');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -68,6 +69,7 @@ if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   app.listen(PORT, async () => {
     console.log(`🚀 Askara Express MVC Backend running on port ${PORT}`);
     console.log(`📡 API endpoint: http://localhost:${PORT}/api`);
+    startDailyScheduler();
     await autoMigrate().catch((err) => {
       console.warn('[Auto-Migrate] Warning:', err.message);
     });
