@@ -36,26 +36,47 @@ function toSupabasePayload(payload) {
   if (payload.title_en !== undefined) mapped.title_en = payload.title_en;
   if (payload.title_id !== undefined) mapped.title_id = payload.title_id;
 
-  const badgeEn = payload.badge_en !== undefined ? payload.badge_en : payload.tag_en;
-  if (badgeEn !== undefined) mapped.badge_en = badgeEn;
+  const tagEn = payload.tag_en !== undefined ? payload.tag_en : payload.badge_en;
+  if (tagEn !== undefined) {
+    mapped.tag_en = tagEn;
+    mapped.badge_en = tagEn;
+  }
 
-  const badgeId = payload.badge_id !== undefined ? payload.badge_id : payload.tag_id;
-  if (badgeId !== undefined) mapped.badge_id = badgeId;
+  const tagId = payload.tag_id !== undefined ? payload.tag_id : payload.badge_id;
+  if (tagId !== undefined) {
+    mapped.tag_id = tagId;
+    mapped.badge_id = tagId;
+  }
 
-  const subtitleEn = payload.subtitle_en !== undefined ? payload.subtitle_en : payload.description_en;
-  if (subtitleEn !== undefined) mapped.subtitle_en = subtitleEn;
+  const descEn = payload.description_en !== undefined ? payload.description_en : payload.subtitle_en;
+  if (descEn !== undefined) {
+    mapped.description_en = descEn;
+    mapped.subtitle_en = descEn;
+  }
 
-  const subtitleId = payload.subtitle_id !== undefined ? payload.subtitle_id : payload.description_id;
-  if (subtitleId !== undefined) mapped.subtitle_id = subtitleId;
+  const descId = payload.description_id !== undefined ? payload.description_id : payload.subtitle_id;
+  if (descId !== undefined) {
+    mapped.description_id = descId;
+    mapped.subtitle_id = descId;
+  }
 
-  const ctaTextEn = payload.cta_text_en !== undefined ? payload.cta_text_en : payload.button_text_en;
-  if (ctaTextEn !== undefined) mapped.cta_text_en = ctaTextEn;
+  const btnTextEn = payload.button_text_en !== undefined ? payload.button_text_en : payload.cta_text_en;
+  if (btnTextEn !== undefined) {
+    mapped.button_text_en = btnTextEn;
+    mapped.cta_text_en = btnTextEn;
+  }
 
-  const ctaTextId = payload.cta_text_id !== undefined ? payload.cta_text_id : payload.button_text_id;
-  if (ctaTextId !== undefined) mapped.cta_text_id = ctaTextId;
+  const btnTextId = payload.button_text_id !== undefined ? payload.button_text_id : payload.cta_text_id;
+  if (btnTextId !== undefined) {
+    mapped.button_text_id = btnTextId;
+    mapped.cta_text_id = btnTextId;
+  }
 
-  const ctaLink = payload.cta_link !== undefined ? payload.cta_link : payload.button_url;
-  if (ctaLink !== undefined) mapped.cta_link = ctaLink;
+  const btnUrl = payload.button_url !== undefined ? payload.button_url : payload.cta_link;
+  if (btnUrl !== undefined) {
+    mapped.button_url = btnUrl;
+    mapped.cta_link = btnUrl;
+  }
 
   return mapped;
 }
@@ -69,7 +90,7 @@ class HomeSection {
         const { data, error } = await supabase
           .from('home_sections')
           .select('*')
-          .or(`id.eq.${sectionKey},section_key.eq.${sectionKey}`)
+          .eq('section_key', sectionKey)
           .maybeSingle();
 
         if (!error && data) return formatSection(data);
@@ -78,22 +99,22 @@ class HomeSection {
       }
     }
 
-    const found = memoryHomeSections.find(s => s.section_key === sectionKey || s.id === sectionKey);
+    const found = memoryHomeSections.find(s => s.section_key === sectionKey || String(s.id) === String(sectionKey));
     return formatSection(found) || null;
   }
 
   static async updateSection(sectionKey = 'who_we_are', payload) {
     const dataToSave = toSupabasePayload(payload);
 
-    if (isSupabaseConfigured()) {
+    if (isSupabaseConfigured() && isTableAvailable('home_sections')) {
       try {
         const { data: existing } = await supabase
           .from('home_sections')
           .select('id')
-          .or(`id.eq.${sectionKey},section_key.eq.${sectionKey}`)
+          .eq('section_key', sectionKey)
           .maybeSingle();
 
-        if (existing) {
+        if (existing && existing.id) {
           const { data, error } = await supabase
             .from('home_sections')
             .update({ ...dataToSave, updated_at: new Date().toISOString() })
@@ -102,17 +123,17 @@ class HomeSection {
             .single();
           if (!error && data) return formatSection(data);
           if (error) {
-            console.warn('[HomeSection.updateSection] Supabase notice (using memory fallback):', error.message);
+            console.warn('[HomeSection.updateSection] Supabase update error:', error.message);
           }
         } else {
           const { data, error } = await supabase
             .from('home_sections')
-            .insert([{ id: sectionKey, section_key: sectionKey, ...dataToSave }])
+            .insert([{ section_key: sectionKey, ...dataToSave, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }])
             .select()
             .single();
           if (!error && data) return formatSection(data);
           if (error) {
-            console.warn('[HomeSection.updateSection] Supabase notice (using memory fallback):', error.message);
+            console.warn('[HomeSection.updateSection] Supabase insert error:', error.message);
           }
         }
       } catch (err) {
@@ -120,10 +141,10 @@ class HomeSection {
       }
     }
 
-    const index = memoryHomeSections.findIndex(s => s.section_key === sectionKey || s.id === sectionKey);
+    const index = memoryHomeSections.findIndex(s => s.section_key === sectionKey || String(s.id) === String(sectionKey));
     if (index === -1) {
       const newSec = formatSection({
-        id: sectionKey,
+        id: memoryHomeSections.length ? Math.max(...memoryHomeSections.map(s => Number(s.id) || 0)) + 1 : 1,
         section_key: sectionKey,
         ...dataToSave,
         created_at: new Date().toISOString(),

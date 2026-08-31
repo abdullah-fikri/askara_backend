@@ -78,12 +78,16 @@ class Industry {
   }
 
   static async findById(id) {
+    if (!id) return null;
+    if (isNaN(Number(id))) {
+      return await this.findBySlug(id);
+    }
     if (isSupabaseConfigured() && isTableAvailable('industries')) {
       try {
         const { data, error } = await supabase
           .from('industries')
           .select('*')
-          .eq('id', id)
+          .eq('id', Number(id))
           .single();
         if (!error && data) return formatIndustry(data);
       } catch (err) {
@@ -95,6 +99,7 @@ class Industry {
   }
 
   static async findBySlug(slug) {
+    if (!slug) return null;
     if (isSupabaseConfigured() && isTableAvailable('industries')) {
       try {
         const { data, error } = await supabase
@@ -172,6 +177,7 @@ class Industry {
   }
 
   static async update(id, payload) {
+    if (!id) return null;
     const dataToUpdate = { ...payload };
     delete dataToUpdate.id;
 
@@ -202,16 +208,18 @@ class Industry {
 
     if (isSupabaseConfigured() && isTableAvailable('industries')) {
       try {
-        const { data, error } = await supabase
-          .from('industries')
-          .update(dataToUpdate)
-          .eq('id', id)
-          .select()
-          .single();
+        let query = supabase.from('industries').update(dataToUpdate);
+        if (isNaN(Number(id))) {
+          query = query.eq('slug', id);
+        } else {
+          query = query.eq('id', Number(id));
+        }
+
+        const { data, error } = await query.select().single();
 
         if (!error && data) {
           updated = formatIndustry(data);
-          const index = memoryIndustries.findIndex(i => i.id === Number(id));
+          const index = memoryIndustries.findIndex(i => i.id === Number(data.id) || i.slug === id);
           if (index !== -1) memoryIndustries[index] = updated;
         }
       } catch (err) {
@@ -220,7 +228,7 @@ class Industry {
     }
 
     if (!updated) {
-      const index = memoryIndustries.findIndex(i => i.id === Number(id));
+      const index = memoryIndustries.findIndex(i => i.id === Number(id) || i.slug === id);
       if (index !== -1) {
         memoryIndustries[index] = formatIndustry({
           ...memoryIndustries[index],
