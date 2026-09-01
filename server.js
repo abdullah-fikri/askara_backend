@@ -10,11 +10,18 @@ const { startDailyScheduler } = require('./utils/keepAliveScheduler');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Disable ETag to prevent 304 stripping CORS headers
+app.disable('etag');
+
 // Bulletproof CORS & Preflight OPTIONS middleware (handles dynamic origins & credentials)
 app.use((req, res, next) => {
-  const origin = req.headers.origin || '*';
-  res.setHeader('Access-Control-Allow-Origin', origin);
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, PUT, PATCH, POST, DELETE, OPTIONS');
   res.setHeader(
     'Access-Control-Allow-Headers',
@@ -25,7 +32,7 @@ app.use((req, res, next) => {
 
   // Immediately respond to preflight OPTIONS request
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    return res.status(204).end();
   }
   next();
 });
