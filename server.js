@@ -21,6 +21,7 @@ app.use((req, res, next) => {
     'Origin, X-Requested-With, Content-Type, Accept, Authorization, Range, X-Api-Version'
   );
   res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range');
+  res.setHeader('Vary', 'Origin, Accept-Encoding');
 
   // Immediately respond to preflight OPTIONS request
   if (req.method === 'OPTIONS') {

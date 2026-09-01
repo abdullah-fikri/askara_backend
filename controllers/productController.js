@@ -42,7 +42,10 @@ class ProductController {
     try {
       const { slug } = req.params;
       const { categorySlug } = req.query;
-      const product = await Product.findBySlug(slug, categorySlug);
+      let product = await Product.findBySlug(slug, categorySlug);
+      if (!product && categorySlug) {
+        product = await Product.findBySlug(slug);
+      }
       if (!product) {
         return res.status(404).json({ success: false, message: 'Product not found' });
       }
