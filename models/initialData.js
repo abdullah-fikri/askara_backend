@@ -286,8 +286,8 @@ async function seedDatabase(client) {
            location_en, location_id, employment_type_en, employment_type_id,
            experience_level_en, experience_level_id, salary_range, description_en, description_id,
            responsibilities_en, responsibilities_id, requirements_en, requirements_id,
-           benefits_en, benefits_id, linkedin_url, is_active
-         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+           benefits_en, benefits_id, is_active
+         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
          ON CONFLICT (id) DO UPDATE SET
            slug = EXCLUDED.slug,
            job_title_en = EXCLUDED.job_title_en,
@@ -309,14 +309,13 @@ async function seedDatabase(client) {
            requirements_id = EXCLUDED.requirements_id,
            benefits_en = EXCLUDED.benefits_en,
            benefits_id = EXCLUDED.benefits_id,
-           linkedin_url = EXCLUDED.linkedin_url,
            is_active = EXCLUDED.is_active`,
         [
           car.id, car.slug, car.job_title_en, car.job_title_id, car.department_en, car.department_id,
           car.location_en, car.location_id, car.employment_type_en, car.employment_type_id,
           car.experience_level_en, car.experience_level_id, car.salary_range, car.description_en, car.description_id,
           car.responsibilities_en, car.responsibilities_id, car.requirements_en, car.requirements_id,
-          car.benefits_en, car.benefits_id, car.linkedin_url, car.is_active
+          car.benefits_en, car.benefits_id, car.is_active
         ]
       );
     }

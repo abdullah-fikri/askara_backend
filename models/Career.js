@@ -93,7 +93,6 @@ class Career {
       employment_type_id: payload.employment_type_id || 'Penuh Waktu',
       experience_level_en: payload.experience_level_en || null,
       experience_level_id: payload.experience_level_id || null,
-      linkedin_url: payload.linkedin_url || null,
       description_en: payload.description_en || null,
       description_id: payload.description_id || null,
       responsibilities_en: payload.responsibilities_en || null,
@@ -152,10 +151,11 @@ class Career {
   }
 
   static async update(id, payload) {
+    const { linkedin_url, id: _id, ...cleanPayload } = payload;
     if (isSupabaseConfigured()) {
       const { data, error } = await supabase
         .from('careers')
-        .update({ ...payload, updated_at: new Date().toISOString() })
+        .update({ ...cleanPayload, updated_at: new Date().toISOString() })
         .eq('id', id)
         .select()
         .single();
@@ -167,7 +167,7 @@ class Career {
     if (index === -1) return null;
     memoryCareers[index] = {
       ...memoryCareers[index],
-      ...payload,
+      ...cleanPayload,
       updated_at: new Date().toISOString()
     };
     return memoryCareers[index];
