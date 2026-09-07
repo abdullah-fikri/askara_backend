@@ -25,7 +25,7 @@ class PartnerController {
       }
 
       if (!partner) {
-        return res.status(404).json({ success: false, message: 'Partner / Principal not found' });
+        return res.status(404).json({ success: false, message: 'Partner not found' });
       }
       return res.json({ success: true, data: partner });
     } catch (err) {

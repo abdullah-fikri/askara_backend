@@ -26,7 +26,7 @@ function normalizeGallery(gallery) {
 
 function ensureSlug(partner) {
   if (partner.slug && partner.slug.trim()) return partner.slug.trim();
-  return (partner.name || 'principal')
+  return (partner.name || 'partner')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '');
@@ -131,7 +131,7 @@ class Partner {
   }
 
   static async create(payload) {
-    const slug = payload.slug || (payload.name || 'principal')
+    const slug = payload.slug || (payload.name || 'partner')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '');
